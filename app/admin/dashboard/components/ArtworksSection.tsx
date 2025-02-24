@@ -212,7 +212,7 @@ export function ArtworksSection() {
 											}
 											alt='Image Preview'
 											fill
-											className='object-cover rounded-lg border'
+											className='object-contain rounded-lg border'
 										/>
 									</div>
 								</div>

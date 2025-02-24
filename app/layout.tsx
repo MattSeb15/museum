@@ -7,6 +7,7 @@ import { CartDrawer } from '@/components/cart/CartDrawer'
 import { SiteProvider } from '@/lib/store/site-context'
 import { Main } from '@/components/Main'
 import { AtrilProvider } from '@/lib/store/virtual-tour-context'
+import { Toaster } from '@/components/ui/toaster'
 
 const playfair = Playfair_Display({
 	subsets: ['latin'],
@@ -33,6 +34,7 @@ export default function RootLayout({
 							<Main>{children}</Main>
 							<CartDrawer />
 						</CartProvider>
+						<Toaster />
 					</body>
 				</SiteProvider>
 			</AtrilProvider>

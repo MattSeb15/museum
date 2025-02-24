@@ -9,3 +9,17 @@ export type Artwork = {
 	dimensions: string
 	location: string
 }
+export type Museum = {
+	id: string
+	title: string
+	visible: boolean
+	principal: boolean
+	museum_item_ids: string[]
+}
+
+export type MuseumItem = {
+	id: string
+	artwork_id: string | null
+	visible: boolean
+	index: number
+}

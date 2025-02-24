@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber'
 import {
 	OrbitControls,
@@ -12,52 +12,110 @@ import { TextureLoader } from 'three'
 
 import '../../app/virtual.css'
 import { useAtril } from '@/lib/store/virtual-tour-context'
-import { ArrowLeftIcon, PauseIcon, PlayIcon, RefreshCwIcon } from 'lucide-react'
+import {
+	ArrowLeftIcon,
+	ChevronUp,
+	PauseIcon,
+	PlayIcon,
+	RefreshCwIcon,
+} from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { supabase } from '@/lib/supabase/client'
+import { Artwork, Museum, MuseumItem } from '@/lib/types'
+/* import {
+	Select,
+	SelectContent,
+
+	SelectPortal,
+	SelectViewport,
+} from '@radix-ui/react-select' */
+import {
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	SelectContent,
+	Select,
+} from '@/components/ui/select'
+
+type PositionedPainting = {
+	position: number[]
+	wall: 'left' | 'right' | 'front'
+}
+
+const paintingsPositions: PositionedPainting[] = [
+	{
+		position: [-9.8, 2, -5],
+		wall: 'left',
+	},
+	{
+		position: [-9.8, 2, -15],
+		wall: 'left',
+	},
+	{
+		position: [0.1, 2, -24.8],
+		wall: 'front',
+	},
+	{
+		position: [9.8, 2, -15],
+		wall: 'right',
+	},
+	{
+		position: [9.8, 2, -5],
+		wall: 'right',
+	},
+]
 
 const paintings = [
 	{
-		url: 'https://images.unsplash.com/photo-1739643247007-044e2623ca98?q=80&w=2129&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-		position: [-9.8, 2, -5],
-		rotation: [0, Math.PI / 2, 0],
-		text: 'Título del cuadro 1',
+		visible: true,
+		artwork: {
+			title: 'Título del cuadro 1',
+			description: 'Descripción del cuadro 1',
+			image_url:
+				'https://images.unsplash.com/photo-1739643247007-044e2623ca98?q=80&w=2129&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+		},
 	},
 	{
-		url: 'https://images.unsplash.com/photo-1739469600176-b58ebd9b9404?q=80&w=1939&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-		position: [9.8, 2, -5],
-		rotation: [0, -Math.PI / 2, 0],
-		text: 'Título del cuadro 2',
+		visible: true,
+		artwork: {
+			title: 'Título del cuadro 2',
+			description: 'Descripción del cuadro 2',
+			image_url:
+				'https://images.unsplash.com/photo-1739469600176-b58ebd9b9404?q=80&w=1939&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+		},
 	},
 	{
-		url: 'https://images.unsplash.com/photo-1739999373818-ab59c32b23c1?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-		position: [-9.8, 2, -15],
-		rotation: [0, Math.PI / 2, 0],
-		text: 'Título del cuadro 3',
+		visible: false,
+		artwork: {
+			title: 'Mona Lisa 5',
+			description: 'Descripción de Mona Lisa 5',
+			image_url:
+				'https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Leonardo_da_Vinci_-_Mona_Lisa_%28Louvre%2C_Paris%29.jpg/1200px-Leonardo_da_Vinci_-_Mona_Lisa_%28Louvre%2C_Paris%29.jpg',
+		},
 	},
 	{
-		url: 'https://images.unsplash.com/photo-1739993655680-4b7050ed2896?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-		position: [9.8, 2, -15],
-		rotation: [0, -Math.PI / 2, 0],
-		text: 'Título del cuadro 4',
+		visible: true,
+		artwork: {
+			title: 'Título del cuadro 3',
+			description: 'Descripción del cuadro 3',
+			image_url:
+				'https://images.unsplash.com/photo-1739999373818-ab59c32b23c1?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+		},
 	},
-	{
-		url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Leonardo_da_Vinci_-_Mona_Lisa_%28Louvre%2C_Paris%29.jpg/1200px-Leonardo_da_Vinci_-_Mona_Lisa_%28Louvre%2C_Paris%29.jpg',
-		position: [0.1, 2, -24.8],
-		rotation: [0, 0, 0],
-		text: 'Mona Lisa',
-	},
+	{ visible: true, artwork: null },
 ]
 
 function Atril({
 	position,
 	rotation,
-	text,
+	artwork,
 	isInView,
 	cardRef, // Añadimos el tipo de cardRef
 	cursorRef, // Añadimos el tipo de cursorRef
 }: {
 	position: THREE.Vector3
 	rotation: THREE.Euler
-	text: string
+	artwork: Artwork | null
 	isInView: boolean
 	cardRef: React.RefObject<HTMLDivElement> // Añadimos el tipo de cardRef
 	cursorRef: React.RefObject<HTMLDivElement> // Añadimos el tipo de cursorRef
@@ -73,7 +131,9 @@ function Atril({
 
 	const handlePointerOver = () => {
 		if (cardRef.current) {
-			cardRef.current.innerHTML = `<h3 class="text-lg font-bold">${text}</h3><p class="w-72 text-sm">Description text Lorem ipsum dolor sit, amet consectetur adipisicing elit. Unde distinctio natus laborum eos soluta. Cumque tempora numquam accusantium voluptatem reiciendis quaerat dolorem maxime exercitationem harum maiores nostrum, praesentium itaque nemo.</p>`
+			cardRef.current.innerHTML = `<h3 class="text-lg font-bold">${
+				artwork?.title ?? ''
+			}</h3><p class="w-72 text-sm">${artwork?.description ?? ''}</p>`
 			cardRef.current.classList.add('show')
 		}
 		if (cursorRef.current) {
@@ -133,50 +193,106 @@ function Atril({
 	)
 }
 
+const setRotationByWall = (wall: 'left' | 'right' | 'front') => {
+	switch (wall) {
+		case 'left':
+			return [0, Math.PI / 2, 0]
+		case 'right':
+			return [0, -Math.PI / 2, 0]
+		case 'front':
+			return [0, 0, 0]
+		default:
+			return [0, 0, 0]
+	}
+}
+
 function Painting({
-	url,
 	position,
-	rotation,
+	wall,
 	onClick,
 	isInView,
-	text,
-	cursorRef, // Añadimos cursorRef como propiedad
-	cardRef, // Añadimos cardRef como propiedad
+	artwork,
+	visible,
+	cursorRef,
+	cardRef,
 }: {
-	url: string
 	position: number[]
-	rotation: number[]
+	wall: 'left' | 'right' | 'front'
 	onClick: () => void
 	isInView: boolean
-	text: string
-	cursorRef: React.RefObject<HTMLDivElement> // Añadimos el tipo de cursorRef
-	cardRef: React.RefObject<HTMLDivElement> // Añadimos el tipo de cardRef
+	visible: boolean
+	artwork: Artwork | null
+	cursorRef: React.RefObject<HTMLDivElement> //
+	cardRef: React.RefObject<HTMLDivElement>
 }) {
-	const texture = useLoader(TextureLoader, url)
-	const [hovered, setHovered] = useState(false)
-	const [scale, setScale] = useState(1)
-	const [imageDimensions, setImageDimensions] = useState({
-		width: 1,
-		height: 1,
-	})
+	const rotation = setRotationByWall(wall)
+	const atrilPosition = new THREE.Vector3(position[0], -2, position[2])
+	const atrilRotation = new THREE.Euler(
+		rotation[0],
+		rotation[1] + Math.PI,
+		rotation[2]
+	)
+	if (!visible) return null
 
-	useEffect(() => {
-		if (hovered && !isInView) {
-			/* setScale(1.1) */
-		} else {
-			/* setScale(1) */
-		}
-	}, [hovered, isInView])
+	if (!artwork) {
+		return (
+			<>
+				<SpotlightRigComponent position={position} />
+				<mesh
+					position={new THREE.Vector3(...position)}
+					rotation={new THREE.Euler(...rotation)}>
+					<planeGeometry args={[6, 4]} />
+					<meshStandardMaterial
+						side={THREE.FrontSide}
+						metalness={0.1}
+						roughness={0.8}
+						emissive='#ffffff'
+						emissiveIntensity={0.02}
+					/>
+				</mesh>
+				<Atril
+					position={atrilPosition}
+					rotation={atrilRotation}
+					artwork={artwork}
+					cardRef={cardRef} // Pasamos cardRef al componente Atril
+					isInView={isInView}
+					cursorRef={cursorRef} // Pasamos cursorRef al componente Atril
+				/>
+			</>
+		)
+	}
 
-	useEffect(() => {
-		const img = new Image()
-		img.src = url
-		img.onload = () => {
-			const aspectRatio = img.width / img.height
-			setImageDimensions({ width: 4 * aspectRatio, height: 4 })
-		}
-	}, [url])
+	return (
+		<PaintingWithArtWork
+			position={position}
+			wall={wall}
+			onClick={onClick}
+			isInView={isInView}
+			artwork={artwork}
+			cursorRef={cursorRef}
+			cardRef={cardRef}
+		/>
+	)
+}
 
+function PaintingWithArtWork({
+	position,
+	wall,
+	onClick,
+	isInView,
+	artwork,
+	cursorRef,
+	cardRef,
+}: {
+	position: number[]
+	wall: 'left' | 'right' | 'front'
+	onClick: () => void
+	isInView: boolean
+	artwork: Artwork
+	cursorRef: React.RefObject<HTMLDivElement> //
+	cardRef: React.RefObject<HTMLDivElement>
+}) {
+	const rotation = setRotationByWall(wall)
 	const atrilPosition = new THREE.Vector3(position[0], -2, position[2])
 	const atrilRotation = new THREE.Euler(
 		rotation[0],
@@ -184,14 +300,32 @@ function Painting({
 		rotation[2]
 	)
 
+	const texture = useLoader(TextureLoader, artwork.image_url)
+	const [imageDimensions, setImageDimensions] = useState({
+		width: 1,
+		height: 1,
+	})
+
+	useEffect(() => {
+		if (!artwork.image_url) {
+			setImageDimensions({ width: 6, height: 4 })
+			return
+		}
+		const img = new Image()
+		img.src = artwork.image_url
+		img.onload = () => {
+			const aspectRatio = img.width / img.height
+			setImageDimensions({ width: 4 * aspectRatio, height: 4 })
+		}
+	}, [artwork.image_url])
+
 	const handlePointerOver = () => {
-		setHovered(true)
 		if (!isInView) {
 			if (cursorRef.current) {
 				cursorRef.current.style.setProperty('--cursor-scale', '2')
 			}
 			if (cardRef.current) {
-				cardRef.current.textContent = text
+				cardRef.current.textContent = artwork.title
 				cardRef.current.classList.add('show')
 			}
 		} else {
@@ -203,7 +337,6 @@ function Painting({
 	}
 
 	const handlePointerOut = () => {
-		setHovered(false)
 		if (!isInView) {
 			if (cursorRef.current) {
 				cursorRef.current.style.setProperty('--cursor-scale', '1')
@@ -218,22 +351,20 @@ function Painting({
 			}
 		}
 	}
-
 	return (
 		<>
+			<SpotlightRigComponent position={position} />
 			<mesh
 				position={new THREE.Vector3(...position)}
 				rotation={new THREE.Euler(...rotation)}
 				onClick={onClick}
 				onPointerOver={handlePointerOver}
-				onPointerOut={handlePointerOut}
-				scale={[scale, scale, scale]}>
+				onPointerOut={handlePointerOut}>
 				<planeGeometry args={[imageDimensions.width, imageDimensions.height]} />
 				<meshStandardMaterial
 					map={texture}
-					side={THREE.DoubleSide}
-					metalness={0.1}
-					roughness={0.8}
+					side={THREE.FrontSide}
+					roughness={0.25}
 					emissive='#ffffff'
 					emissiveIntensity={0.02}
 				/>
@@ -241,10 +372,10 @@ function Painting({
 			<Atril
 				position={atrilPosition}
 				rotation={atrilRotation}
-				text={text}
-				cardRef={cardRef} // Pasamos cardRef al componente Atril
+				artwork={artwork}
+				cardRef={cardRef}
 				isInView={isInView}
-				cursorRef={cursorRef} // Pasamos cursorRef al componente Atril
+				cursorRef={cursorRef}
 			/>
 		</>
 	)
@@ -338,30 +469,20 @@ function Walls() {
 	)
 }
 
-function SpotlightRig() {
+function SpotlightRigComponent({ position }: { position: number[] }) {
 	return (
-		<>
-			{paintings.map((painting, index) => (
-				<group
-					key={index}
-					position={[painting.position[0], 6, painting.position[2]]}>
-					<SpotLight
-						castShadow
-						distance={15}
-						angle={0.7}
-						attenuation={2}
-						anglePower={4}
-						intensity={5}
-						position={[0, 0, 0]}
-						target-position={[
-							painting.position[0],
-							painting.position[1],
-							painting.position[2],
-						]}
-					/>
-				</group>
-			))}
-		</>
+		<group position={[position[0], 6, position[2]]}>
+			<SpotLight
+				castShadow
+				distance={15}
+				angle={0.7}
+				attenuation={2}
+				anglePower={4}
+				intensity={5}
+				position={[0, 0, 0]}
+				target-position={[position[0], position[1], position[2]]}
+			/>
+		</group>
 	)
 }
 
@@ -369,7 +490,7 @@ function Lights() {
 	return (
 		<>
 			{/* Ambient light for base illumination */}
-			<ambientLight intensity={0.6} />
+			<ambientLight intensity={0.62} />
 
 			{/* Main ceiling lights */}
 			<pointLight
@@ -379,17 +500,14 @@ function Lights() {
 			/>
 			<pointLight
 				position={[0, 7.5, -10]}
-				intensity={0}
+				intensity={0.8}
 				castShadow
 			/>
 			<pointLight
 				position={[0, 7.5, -20]}
-				intensity={0.8}
+				intensity={0.2}
 				castShadow
 			/>
-
-			{/* Spotlights for each painting */}
-			<SpotlightRig />
 		</>
 	)
 }
@@ -416,7 +534,7 @@ function CameraAnimation({
 	setIsMoving: (moving: boolean) => void
 }) {
 	const { camera } = useThree()
-	const startPosition = new THREE.Vector3(0, 2, 5)
+	const startPosition = new THREE.Vector3(0, 2, 10)
 	const endPosition = new THREE.Vector3(0, 2, -20)
 	const startRotation = new THREE.Euler(0, 0, 0)
 	const progress = useRef(0)
@@ -466,6 +584,8 @@ function CameraAnimation({
 }
 
 function Scene({
+	museumItems,
+	artworks,
 	onAnimationComplete,
 	isPaused,
 	speed,
@@ -480,6 +600,8 @@ function Scene({
 	cursorRef, // Añadimos cursorRef como propiedad
 	cardRef, // Añadimos cardRef como propiedad
 }: {
+	museumItems: MuseumItem[]
+	artworks: Artwork[]
 	onAnimationComplete: () => void
 	isPaused: boolean
 	speed: number
@@ -534,18 +656,28 @@ function Scene({
 			<Walls />
 			<Floor />
 			<Lights />
-			{paintings.map((painting, index) => (
-				<Painting
-					key={index}
-					{...painting}
-					onClick={() =>
-						handlePaintingClick(painting.position, painting.rotation, index)
-					}
-					isInView={selectedPainting === index}
-					cursorRef={cursorRef} // Pasamos cursorRef al componente Painting
-					cardRef={cardRef} // Pasamos cardRef al componente Painting
-				/>
-			))}
+			{museumItems.map((item, index) => {
+				const artwork = artworks.find(a => a.id === item.artwork_id)
+				return (
+					<Painting
+						key={index}
+						wall={paintingsPositions[index].wall}
+						position={paintingsPositions[index].position}
+						visible={item.visible}
+						artwork={artwork || null}
+						isInView={selectedPainting === index}
+						cursorRef={cursorRef} // Pasamos cursorRef al componente Painting
+						cardRef={cardRef} // Pasamos cardRef al componente Painting
+						onClick={() =>
+							handlePaintingClick(
+								paintingsPositions[index].position,
+								setRotationByWall(paintingsPositions[index].wall),
+								index
+							)
+						}
+					/>
+				)
+			})}
 		</>
 	)
 }
@@ -580,6 +712,95 @@ export default function ArtGallery() {
 	const cardRef = useRef<HTMLDivElement>(null)
 
 	const { isSelectedAtril, setIsSelectedAtril } = useAtril()
+	const router = useRouter()
+	const searchParams = useSearchParams()
+	const id = searchParams.get('id')
+	const [currentMuseum, setCurrentMuseum] = useState<Museum | null>(null)
+	const [museums, setMuseums] = useState<Museum[]>([])
+	const [museumItems, setMuseumItems] = useState<MuseumItem[]>([])
+	const [artworks, setArtworks] = useState<Artwork[]>([])
+
+	const [loading, setLoading] = useState(true)
+
+	const fetchMuseums = async (
+		isFromChangeSelect?: boolean,
+		museum?: Museum
+	) => {
+		if (isFromChangeSelect) {
+			if (museum) {
+				handleReset()
+				setCurrentMuseum(museum)
+				fetchMuseumItems(museum.museum_item_ids)
+				router.push(`/museum?id=${museum.id}`)
+			}
+			return
+		}
+		const { data } = await supabase
+			.from('museums')
+			.select('*')
+			.order('created_at', { ascending: false })
+
+		if (data) {
+			const sortedData = data.sort(
+				(a, b) => (b.principal ? 1 : 0) - (a.principal ? 1 : 0)
+			)
+			setMuseums(sortedData)
+			if (id) {
+				fetchMuseumById(id)
+			} else {
+				fetchMuseumById(sortedData[0].id)
+
+				router.push(`/museum?id=${sortedData[0].id}`)
+			}
+		}
+	}
+
+	const fetchMuseumById = async (id: string) => {
+		const { data } = await supabase
+			.from('museums')
+			.select('*')
+			.eq('id', id)
+			.single()
+
+		if (data) {
+			setCurrentMuseum(data)
+			fetchMuseumItems(data.museum_item_ids)
+		}
+	}
+
+	const fetchArtworks = async () => {
+		const { data } = await supabase
+			.from('artworks')
+			.select(
+				'id, title, category, image_url, year, description, medium, dimensions, location'
+			)
+
+		if (data) {
+			setArtworks(data)
+		}
+	}
+
+	const fetchMuseumItems = async (itemIds: string[]) => {
+		const { data } = await supabase
+			.from('museum_items')
+			.select('*')
+			.in('id', itemIds)
+			.order('index')
+
+		if (data) {
+			setMuseumItems(data)
+		}
+	}
+	const fetchData = async (isFromChangeSelect?: boolean, museum?: Museum) => {
+		setLoading(true)
+		await fetchMuseums(isFromChangeSelect, museum)
+		await fetchArtworks()
+		setLoading(false)
+	}
+
+	useEffect(() => {
+		fetchData()
+	}, [])
 
 	useEffect(() => {
 		const handleMouseMove = (event: MouseEvent) => {
@@ -695,8 +916,26 @@ export default function ArtGallery() {
 		}
 	}
 
+	if (loading) {
+		return (
+			<div className='relative h-screen w-full virtual-page'>
+				<div className='flex items-center justify-center text-lg'>
+					Cargando...
+				</div>
+			</div>
+		)
+	}
+
+	function handleClickMuseum(value: string) {
+		const museum = museums.find(museum => museum.id === value)
+		if (!museum) return
+
+		setCurrentMuseum(museum)
+		fetchData(true, museum)
+	}
+
 	return (
-		<div className='relative h-screen w-full'>
+		<div className='relative h-screen w-full virtual-page'>
 			<Canvas
 				key={key}
 				shadows>
@@ -706,6 +945,8 @@ export default function ArtGallery() {
 					position={[0, 2, 5]}
 				/>
 				<Scene
+					museumItems={museumItems}
+					artworks={artworks}
 					onAnimationComplete={() => setAnimationComplete(true)}
 					isPaused={isPaused}
 					speed={speed}
@@ -741,9 +982,38 @@ export default function ArtGallery() {
 					/>
 				)}
 			</Canvas>
+
 			{targetPosition && (
 				<div className='absolute animate-pulse top-24 right-4 bg-white/80 rounded-lg px-2 py-0.5'>
 					<span>Vista desbloqueada</span>
+				</div>
+			)}
+
+			{museums.length > 0 && (
+				<div className='absolute bottom-4 left-2'>
+					<div className='opacity-50 hover:opacity-100 transition-opacity duration-300'>
+						<Select
+							value={currentMuseum?.id}
+							onValueChange={value => {
+								handleClickMuseum(value)
+							}}>
+							<SelectTrigger isUp={true}>
+								{currentMuseum?.title || 'Selecciona un museo'}
+							</SelectTrigger>
+							<SelectContent className='bg-white shadow-lg rounded-md'>
+								{museums.map(
+									museum =>
+										museum.visible && (
+											<SelectItem
+												key={museum.id}
+												value={museum.id}>
+												{museum.title}
+											</SelectItem>
+										)
+								)}
+							</SelectContent>
+						</Select>
+					</div>
 				</div>
 			)}
 

@@ -58,7 +58,7 @@ export default function Home() {
 		<div className='min-h-screen pt-20'>
 			{/* Navigation Button */}
 			<div className='fixed bottom-8 right-8 z-50'>
-				<Link href='/virtual-tour'>
+				<Link href='/museum'>
 					<motion.button
 						whileHover={{ scale: 1.1 }}
 						whileTap={{ scale: 0.9 }}
@@ -69,30 +69,40 @@ export default function Home() {
 			</div>
 
 			{/* Categories */}
-			<div
-				style={{
-					backgroundColor: bgColor || 'white',
-					color: config?.text_color || 'black',
-				}}
-				className='sticky top-20 bg-white/80 backdrop-blur-sm z-40 py-4 border-b'>
-				<div className='max-w-7xl mx-auto px-4'>
-					<div className='flex overflow-x-auto space-x-6 pb-2 scrollbar-hide'>
-						{categories.map(category => (
-							<button
-								key={category}
-								onClick={() => setSelectedCategory(category)}
-								className={`text-sm whitespace-nowrap px-4 py-2 rounded-full transition-colors duration-300
+			{config?.text_color ? (
+				<div
+					style={{
+						backgroundColor: bgColor || 'white',
+						color: config?.text_color || 'black',
+					}}
+					className='sticky top-20 bg-white/80 backdrop-blur-sm z-40 py-4 border-b'>
+					<div className='max-w-7xl mx-auto px-4'>
+						<div className='px-4 flex overflow-x-auto space-x-6 pb-2 scrollbar-hide'>
+							{categories.map(category => (
+								<button
+									key={category}
+									onClick={() => setSelectedCategory(category)}
+									className={`text-sm whitespace-nowrap px-4 py-2 rounded-full transition-colors duration-300
                   ${
 										selectedCategory === category
 											? 'bg-black text-white'
 											: 'text-gray-600 hover:text-black'
 									}`}>
-								{category}
-							</button>
-						))}
+									{category}
+								</button>
+							))}
+						</div>
 					</div>
 				</div>
-			</div>
+			) : (
+				<div className='sticky top-20 bg-white/80 backdrop-blur-sm z-40 py-4 border-b'>
+					<div className='max-w-7xl mx-auto px-4'>
+						<div className='px-4 flex overflow-x-auto space-x-6 pb-2 scrollbar-hide'>
+							<Skeleton className='h-8 w-full animate-pulse rounded-md px-5' />
+						</div>
+					</div>
+				</div>
+			)}
 
 			{/* Artwork Grid */}
 			<div className='max-w-7xl mx-auto px-4 py-8'>
