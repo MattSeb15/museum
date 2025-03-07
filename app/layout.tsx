@@ -15,7 +15,7 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
-	title: 'Museo de Kerli',
+	title: 'Museum',
 	description: 'A modern art museum showcasing the works of Kerli',
 }
 

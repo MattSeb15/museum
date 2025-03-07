@@ -205,7 +205,10 @@ export default function ShopPage() {
 
 				<div className='grid grid-cols-2 sm:grid-cols-3 gap-4'>
 					{selectedCategory.products.map(product => (
-						<ShopCardComponent product={product} />
+						<ShopCardComponent
+							key={product.id}
+							product={product}
+						/>
 					))}
 				</div>
 			</div>
