@@ -178,19 +178,19 @@ export function ArtworkDisplay({ artwork }: { artwork: Artwork }) {
 						<div className='space-y-4 border-t border-gray-200/50 pt-6'>
 							<div className='grid grid-cols-2 gap-4'>
 								<div>
-									<h3 className='text-sm text-gray-500'>Category</h3>
+									<h3 className='text-sm text-gray-500'>Categoría</h3>
 									<p className='mt-1'>{artwork.category}</p>
 								</div>
 								<div>
-									<h3 className='text-sm text-gray-500'>Medium</h3>
+									<h3 className='text-sm text-gray-500'>Técnica</h3>
 									<p className='mt-1'>{artwork.medium}</p>
 								</div>
 								<div>
-									<h3 className='text-sm text-gray-500'>Dimensions</h3>
+									<h3 className='text-sm text-gray-500'>Dimensiones</h3>
 									<p className='mt-1'>{artwork.dimensions}</p>
 								</div>
 								<div>
-									<h3 className='text-sm text-gray-500'>Location</h3>
+									<h3 className='text-sm text-gray-500'>Lugar</h3>
 									<p className='mt-1'>{artwork.location}</p>
 								</div>
 							</div>

@@ -8,14 +8,7 @@ import { ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { useCart } from '@/lib/store/cart-context'
 import { Skeleton } from '@/components/ui/skeleton'
-
-type Product = {
-	id: string
-	name: string
-	category: string
-	price: number
-	mockup_image: string
-}
+import { Product } from '@/lib/types'
 
 type Artwork = {
 	id: string
@@ -81,7 +74,7 @@ export default function ShopPage() {
 	}, [])
 
 	const handleAddToCart = () => {
-		if (selectedProduct && selectedArtwork) {
+		/* 	if (selectedProduct && selectedArtwork) {
 			addItem({
 				productId: selectedProduct.id,
 				productName: selectedProduct.name,
@@ -91,7 +84,7 @@ export default function ShopPage() {
 				image: selectedArtwork.image_url,
 				mockupImage: selectedProduct.mockup_image,
 			})
-		}
+		} */
 	}
 
 	if (loading) {
@@ -154,7 +147,25 @@ export default function ShopPage() {
 	if (!selectedCategory || !selectedProduct || !selectedArtwork) {
 		return null
 	}
-
+	const ShopCardComponent: React.FC<{ product: Product }> = ({ product }) => {
+		return (
+			<div className='flex flex-col'>
+				<div className='w-auto h-[550]'>
+					<Image
+						src={product.image}
+						alt={selectedArtwork.title}
+						width={300}
+						height={200}
+						className='object-contain'
+					/>
+				</div>
+				<div className='flex flex-col items-start'>
+					<h3 className='text-sm'>{product.name}</h3>
+					<p className='font-bold text-md'>${product.price}</p>
+				</div>
+			</div>
+		)
+	}
 	return (
 		<div className='min-h-screen pt-20 bg-gradient-to-b from-white to-gray-50'>
 			<div className='max-w-7xl mx-auto px-4 py-8'>
@@ -192,139 +203,10 @@ export default function ShopPage() {
 					</div>
 				</div>
 
-				<div className='grid grid-cols-12 gap-8'>
-					{/* Main Content */}
-					<div className='col-span-12 lg:col-span-7 space-y-8'>
-						{/* Product Preview */}
-						<div className='relative aspect-square bg-white rounded-xl overflow-hidden shadow-xl'>
-							<Image
-								src={selectedProduct.mockup_image}
-								alt={selectedProduct.name}
-								fill
-								className='object-cover'
-							/>
-							<div className='absolute inset-0 bg-black/10' />
-							<div className='absolute inset-0 flex items-center justify-center'>
-								<Image
-									src={selectedArtwork.image_url}
-									alt={selectedArtwork.title}
-									width={200}
-									height={200}
-									className='object-contain max-w-[60%] max-h-[60%]'
-								/>
-							</div>
-						</div>
-
-						{/* Product Selection */}
-						<div className='grid grid-cols-2 sm:grid-cols-3 gap-4'>
-							{selectedCategory.products.map(product => (
-								<motion.button
-									key={product.id}
-									onClick={() => setSelectedProduct(product)}
-									whileHover={{ scale: 1.05 }}
-									whileTap={{ scale: 0.95 }}
-									className={`relative aspect-square rounded-lg overflow-hidden ${
-										selectedProduct.id === product.id
-											? 'ring-2 ring-black'
-											: 'ring-1 ring-gray-200'
-									}`}>
-									<Image
-										src={product.mockup_image}
-										alt={product.name}
-										fill
-										className='object-cover'
-									/>
-									<div className='absolute inset-0 bg-black/40 flex items-center justify-center'>
-										<span className='text-white font-medium'>
-											{product.name}
-										</span>
-									</div>
-								</motion.button>
-							))}
-						</div>
-
-						{/* Product Details and Add to Cart */}
-						<div className='bg-white p-6 rounded-xl shadow-lg'>
-							<h1 className='text-2xl font-light mb-2'>
-								{selectedProduct.name} with {selectedArtwork.title}
-							</h1>
-							<p className='text-gray-600 mb-4'>
-								Custom design featuring your selected artwork
-							</p>
-
-							<div className='flex justify-between items-center'>
-								<span className='text-2xl'>${selectedProduct.price}</span>
-								<motion.button
-									whileHover={{ scale: 1.05 }}
-									whileTap={{ scale: 0.95 }}
-									onClick={handleAddToCart}
-									className='bg-black text-white px-8 py-3 rounded-full inline-flex items-center space-x-2 hover:bg-gray-800 transition-colors'>
-									<span>Add to Cart</span>
-								</motion.button>
-							</div>
-						</div>
-					</div>
-
-					{/* Right Panel - Artwork Selection */}
-					<div className='col-span-12 lg:col-span-5'>
-						<div className='bg-white rounded-xl shadow-lg overflow-hidden sticky top-24'>
-							<div className='p-4 border-b'>
-								<h2 className='text-xl font-light'>Select Artwork</h2>
-							</div>
-							<div className='overflow-y-auto max-h-[calc(100vh-200px)]'>
-								{Object.entries(
-									artworks.reduce((acc, artwork) => {
-										const category = artwork.category
-										if (!acc[category]) {
-											acc[category] = []
-										}
-										acc[category].push(artwork)
-										return acc
-									}, {} as Record<string, Artwork[]>)
-								).map(([category, categoryArtworks]) => (
-									<div
-										key={category}
-										className='p-4 border-b last:border-b-0'>
-										<h3 className='text-sm font-medium text-gray-500 mb-3'>
-											{category}
-										</h3>
-										<div className='space-y-3'>
-											{categoryArtworks.map(artwork => (
-												<motion.button
-													key={artwork.id}
-													onClick={() => setSelectedArtwork(artwork)}
-													className={`w-full flex items-center space-x-3 p-2 rounded-lg transition-colors ${
-														selectedArtwork.id === artwork.id
-															? 'bg-black/5'
-															: 'hover:bg-black/5'
-													}`}>
-													<div className='relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0'>
-														<Image
-															src={artwork.image_url}
-															alt={artwork.title}
-															fill
-															className='object-cover'
-														/>
-													</div>
-													<div className='flex-1 text-left'>
-														<h4 className='font-medium text-sm'>
-															{artwork.title}
-														</h4>
-														<p className='text-sm text-gray-500'>
-															{artwork.year}
-														</p>
-													</div>
-													{selectedArtwork.id === artwork.id && (
-														<div className='w-2 h-2 rounded-full bg-black flex-shrink-0' />
-													)}
-												</motion.button>
-											))}
-										</div>
-									</div>
-								))}
-							</div>
-						</div>
-					</div>
+				<div className='grid grid-cols-2 sm:grid-cols-3 gap-4'>
+					{selectedCategory.products.map(product => (
+						<ShopCardComponent product={product} />
+					))}
 				</div>
 			</div>
 		</div>

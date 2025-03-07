@@ -14,12 +14,12 @@ export function CartDrawer() {
 
 	const sendToWhatsApp = () => {
 		const phoneNumber = '34123456789' // Replace with your WhatsApp number
-		const message = `New Order:\n\n${items
+		const message = `Nueva orden:\n\n${items
 			.map(
 				item =>
-					`${item.quantity}x ${item.productName} with "${
+					`${item.quantity}x ${item.productName} con "${
 						item.artworkTitle
-					}"\nPrice: $${(item.price * item.quantity).toFixed(2)}\n`
+					}"\nPrecio: $${(item.price * item.quantity).toFixed(2)}\n`
 			)
 			.join('\n')}Total: $${total.toFixed(2)}`
 
@@ -31,16 +31,16 @@ export function CartDrawer() {
 
 	return (
 		<>
-			<button
+			{/* 	<button
 				onClick={() => setIsOpen(true)}
-				className='fixed z-50 bottom-8 right-8 bg-black text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition-colors'>
+				className='fixed z-50 bottom-24 right-8 bg-black text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition-colors'>
 				<ShoppingBag className='w-6 h-6' />
 				{items.length > 0 && (
 					<span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center'>
 						{items.length}
 					</span>
 				)}
-			</button>
+			</button> */}
 
 			{isOpen && (
 				<div className='fixed inset-0 z-50 bg-black bg-opacity-50'>
@@ -48,7 +48,7 @@ export function CartDrawer() {
 						<div className='flex h-full flex-col'>
 							{/* Header */}
 							<div className='flex items-center justify-between border-b px-6 py-4'>
-								<h2 className='text-xl font-light'>Shopping Cart</h2>
+								<h2 className='text-xl font-light'>Carrito</h2>
 								<button
 									onClick={() => setIsOpen(false)}
 									className='text-gray-400 hover:text-black transition-colors'>
@@ -61,7 +61,7 @@ export function CartDrawer() {
 								{items.length === 0 ? (
 									<div className='flex flex-col items-center justify-center h-full text-gray-500'>
 										<ShoppingBag className='h-12 w-12 mb-4' />
-										<p>Your cart is empty</p>
+										<p>Tu carrito está vacio</p>
 									</div>
 								) : (
 									<div className='space-y-4 px-6'>
@@ -89,7 +89,7 @@ export function CartDrawer() {
 												<div className='flex-1'>
 													<h3 className='font-medium'>{item.productName}</h3>
 													<p className='text-sm text-gray-500'>
-														with &quot;{item.artworkTitle}&quot;
+														con &quot;{item.artworkTitle}&quot;
 													</p>
 													<div className='mt-2 flex items-center space-x-4'>
 														<div className='flex items-center space-x-2'>
@@ -140,7 +140,7 @@ export function CartDrawer() {
 										onClick={sendToWhatsApp}
 										className='w-full bg-green-500 text-white py-3 rounded-full flex items-center justify-center space-x-2 hover:bg-green-600 transition-colors'>
 										<Send className='h-5 w-5' />
-										<span>Send to WhatsApp</span>
+										<span>Enviar a WhatsApp</span>
 									</button>
 								</div>
 							)}

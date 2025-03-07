@@ -5,14 +5,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Plus, Pencil, Trash2, X } from 'lucide-react'
 import Image from 'next/image'
 import { Skeleton } from '@/components/ui/skeleton'
-
-type Product = {
-	id: string
-	name: string
-	category: string
-	price: number
-	mockup_image: string
-}
+import { Product } from '@/lib/types'
 
 export function ShopSection() {
 	const [products, setProducts] = useState<Product[]>([])
@@ -114,7 +107,7 @@ export function ShopSection() {
 					<div className='grid grid-cols-2 gap-4'>
 						<div>
 							<label className='block text-sm font-medium text-gray-700 mb-1'>
-								Name
+								Nombre
 							</label>
 							<input
 								type='text'
@@ -128,7 +121,7 @@ export function ShopSection() {
 						</div>
 						<div>
 							<label className='block text-sm font-medium text-gray-700 mb-1'>
-								Category
+								Categoria
 							</label>
 							<input
 								type='text'
@@ -145,7 +138,7 @@ export function ShopSection() {
 					<div className='grid grid-cols-2 gap-4'>
 						<div>
 							<label className='block text-sm font-medium text-gray-700 mb-1'>
-								Price
+								Precio
 							</label>
 							<input
 								type='number'
@@ -163,13 +156,13 @@ export function ShopSection() {
 						</div>
 						<div>
 							<label className='block text-sm font-medium text-gray-700 mb-1'>
-								Mockup Image URL
+								Image URL
 							</label>
 							<input
 								type='url'
-								value={formData.mockup_image || ''}
+								value={formData.image || ''}
 								onChange={e =>
-									setFormData({ ...formData, mockup_image: e.target.value })
+									setFormData({ ...formData, image: e.target.value })
 								}
 								className='w-full px-3 py-2 border rounded-lg'
 								required
@@ -211,7 +204,7 @@ export function ShopSection() {
 						className='bg-white rounded-lg shadow-sm overflow-hidden group'>
 						<div className='relative h-48'>
 							<Image
-								src={product.mockup_image}
+								src={product.image}
 								alt={product.name}
 								fill
 								className='object-cover'

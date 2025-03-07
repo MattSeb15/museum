@@ -23,3 +23,10 @@ export type MuseumItem = {
 	visible: boolean
 	index: number
 }
+export type Product = {
+	id: string
+	name: string
+	category: string
+	price: number
+	image: string
+}
